@@ -1,0 +1,2 @@
+name = 'МоеИмя'
+print(name)
