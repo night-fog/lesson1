@@ -9,15 +9,15 @@ import base64
 
 
 #https://data.mos.ru/opendata/7704111479-svedeniya-o-naibolee-populyarnyh-jenskih-imenah-sredi-novorojdennyh?year=2016
-url = 'https://op.mos.ru/EHDWSREST/catalog/export/get?id=327173'
-year = '2016'
+URL = 'https://op.mos.ru/EHDWSREST/catalog/export/get?id=327173'
+YEAR = '2016'
 
 
 def download_file(url: str, result_path: str):
     try:
         r = requests.get(url, stream=True)
     except ConnectionError:
-        return False
+        return None
     with open(result_path, 'wb') as f:
         for chunk in r.iter_content(chunk_size=1024):
             if chunk:
@@ -48,7 +48,8 @@ def extract_zip_and_get_filepath_list(zipfile_path: str):
 
 
 def opendata_url2json(url, tmp_filename):
-    download_file(url, tmp_filename)
+    if download_file(url, tmp_filename) is None:
+        return False
     mime_type = guess_file_type(tmp_filename)
     if 'application/zip' == mime_type:
         files = extract_zip_and_get_filepath_list(tmp_filename)
@@ -64,7 +65,7 @@ def opendata2html(json_data: dict, year: int):
     html = '<table>'
     html += '<tr><th>Имя мурысика</th></tr>'
     for item in json_data:
-        if item.get('Year') == year:
+        if item.get('Year') == YEAR:
             html += '<tr><tr>{}</tr></tr>'.format(item.get('Name', None).strip())
     html += '</table>'
     return html
@@ -77,4 +78,4 @@ def get_newbie_names(url, file_path, year):
     return opendata2html(json_data, year)
 
 if __name__ == '__main__':
-    print(get_newbie_names(url, f'{os.path.dirname(__file__)}/tmp_data/homework_http.file', 2016))
+    print(get_newbie_names(URL, f'{os.path.dirname(__file__)}/tmp_data/homework_http.file', 2016))
